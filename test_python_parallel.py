@@ -75,7 +75,3 @@ if __name__ == "__main__":
     # check return values
     end = time.time()
     print("successful: {}, time taken: {:f}".format(result, end))
-
-#    print("##################")
-#    test_collect_fibs()
-#    test_fib()

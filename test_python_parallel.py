@@ -32,6 +32,9 @@ def collect_fibs(ns, results, queue):
     return True
 
 
+# tests
+
+
 def test_fib():
     fibs = fib(iterations)
     last_fib = 0
@@ -51,6 +54,9 @@ def test_collect_fibs():
     assert last_fib_number_digits <= int(math.log10(max(queue_list)))+1
 
 
+# utils
+
+
 def get_complete_queue(que):
     queue_values = set()
     if not que.empty():
@@ -60,7 +66,7 @@ def get_complete_queue(que):
     return list(queue_values)
 
 
-if __name__ == "__main__":
+def simple_execution():
     print("sequential execution")
     start = datetime.datetime.now()
     f = fib(iterations)
@@ -73,6 +79,8 @@ if __name__ == "__main__":
           format(
             len(fib_list), int(math.log10(fib_list[-1]))+1, end))
 
+
+def threading_execution():
     print("multi threading")
     start = datetime.datetime.now()
     multi_threading_results1 = []
@@ -94,6 +102,8 @@ if __name__ == "__main__":
                 int(math.log10(multi_threading_results1[-1])) + 1, int(math.log10(multi_threading_results2[-1]))+1,
                 end))
 
+
+def processing_execution():
     print("multi processing")
     start = datetime.datetime.now()
     q = Queue()
@@ -112,3 +122,10 @@ if __name__ == "__main__":
           .format(result,
                   len(queue_items),
                   int(math.log10(max(queue_items))) + 1, end))
+
+
+if __name__ == "__main__":
+    simple_execution()
+    threading_execution()
+    processing_execution()
+

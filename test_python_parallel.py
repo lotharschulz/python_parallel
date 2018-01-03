@@ -2,6 +2,11 @@
 import time
 from threading import Thread
 from multiprocessing import Process
+import math
+
+
+iterations = 10  # 250000
+last_fib_number_digits = 2  # 52247
 
 
 def fib(n):
@@ -23,20 +28,21 @@ def collect_fibs(ns):
 
 
 def test_fib():
-    fibs = fib(250000)
+    fibs = fib(iterations)
     last_fib = 0
     for fs in fibs:
         last_fib = fs
-    assert 52247 >= len(str(last_fib))
+    assert last_fib_number_digits <= int(math.log10(last_fib))+1
 
 
 def test_collect_fibs():
-    fs = collect_fibs(250000)
-    assert 52247 >= len(str(fs[-1]))
+    fs = collect_fibs(iterations)
+    print("fs: {}".format(fs))
+    assert last_fib_number_digits <= int(math.log10(fs[-1]))+1
 
 
 if __name__ == "__main__":
-    n = 250000
+    n = iterations
     print("sequential execution")
     start = time.time()
     f = fib(n)
@@ -44,8 +50,8 @@ if __name__ == "__main__":
     for x in f:
         fib_list.append(x)
     end = time.time()
-    print("len(fibList): {:d}, len(fibList[-1]): {:d}, time taken: {:f}".
-          format(len(fib_list), len(str(fib_list[-1])), end))
+    print("fib_list: {}, len(fib_list): {:d}, len(fib_list[-1]): {:d}, time taken: {:f}".
+          format(fib_list, len(fib_list), len(str(fib_list[-1])), end))
 
     print("multi threading")
     start = time.time()
@@ -69,3 +75,7 @@ if __name__ == "__main__":
     # check return values
     end = time.time()
     print("successful: {}, time taken: {:f}".format(result, end))
+
+#    print("##################")
+#    test_collect_fibs()
+#    test_fib()

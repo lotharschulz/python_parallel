@@ -3,12 +3,10 @@ import time
 from threading import Thread
 from multiprocessing import Process, Queue
 import math
-import types
 import datetime
 
-
-iterations = 10  # 250000
-last_fib_number_digits = 2  # 52247
+iterations = 100  # 250000 100 10
+last_fib_number_digits = 21  # 52247 21 2
 queue_stop = "STOP"
 
 
@@ -25,11 +23,11 @@ def fib(n):
 def collect_fibs(ns, results, queue):
     fibonaccies = fib(ns)
     for fibonacci in fibonaccies:
-        if isinstance(results, types.ListType):
+        if results is not None:
             results.append(fibonacci)
-        if not isinstance(queue, types.NoneType):
+        if queue is not None:
             queue.put(fibonacci)
-    if not isinstance(queue, types.NoneType):
+    if queue is not None:
         queue.put(queue_stop)
     return True
 
@@ -44,20 +42,22 @@ def test_fib():
 
 def test_collect_fibs():
     result_list = []
-    if not collect_fibs(iterations, result_list):
-        raise Exception('collect_fibs function failed to return True')
-    assert last_fib_number_digits <= int(math.log10(result_list[-1]))+1
+    que = Queue()
+    t1 = Thread(target=collect_fibs, args=(iterations, result_list, que, ))
+    t1.start()
+    t1.join()
+    assert last_fib_number_digits <= int(math.log10(max(result_list)))+1
+    queue_list = get_complete_queue(que)
+    assert last_fib_number_digits <= int(math.log10(max(queue_list)))+1
 
 
-def get_complete_queue_sorted(que):
+def get_complete_queue(que):
     queue_values = set()
     if not que.empty():
-        for i in iter(que.get, 'STOP'):
+        for i in iter(que.get, queue_stop):
             queue_values.add(i)
         time.sleep(.1)
-    r = list(queue_values)
-    r.sort()
-    return r
+    return list(queue_values)
 
 
 if __name__ == "__main__":
@@ -68,32 +68,31 @@ if __name__ == "__main__":
     for x in f:
         fib_list.append(x)
     end = (datetime.datetime.now() - start).total_seconds()
-    print("fibonacci list: {}\nfibonacci list length: {:d}\n"
+    print("fibonacci list length: {:d}\n"
           "number of digits fibonacci list last item : {:d}\ntime taken: {:f}\n".
-          format(fib_list, len(fib_list), int(math.log10(fib_list[-1]))+1, end))
+          format(
+            len(fib_list), int(math.log10(fib_list[-1]))+1, end))
 
     print("multi threading")
     start = datetime.datetime.now()
     multi_threading_results1 = []
     multi_threading_results2 = []
-    p1 = Thread(target=collect_fibs, args=(iterations, multi_threading_results1, None, ))
-    p2 = Thread(target=collect_fibs, args=(iterations, multi_threading_results2, None, ))
+    p1 = Thread(target=collect_fibs, args=(iterations / 2, multi_threading_results1, None, ))
+    p2 = Thread(target=collect_fibs, args=(iterations / 2, multi_threading_results2, None, ))
     p1.start()
     p2.start()
     p1.join()
     p2.join()
     end = (datetime.datetime.now() - start).total_seconds()
-    print("fibonacci list 1: {}\n"
-          "fibonacci list 2: {}\n"
-          "fibonacci list 1 length: {:d}\n"
+    print("fibonacci list 1 length: {:d}\n"
           "fibonacci list 2 length: {:d}\n"
           "number of digits fibonacci list 1 last item : {:d}\n"
           "number of digits fibonacci list 2 last item : {:d}\n"
           "time taken: {:f}\n"
-          .format(multi_threading_results1, multi_threading_results2,
-                  len(multi_threading_results1), len(multi_threading_results2),
-                  int(math.log10(multi_threading_results1[-1])) + 1, int(math.log10(multi_threading_results2[-1]))+1,
-                  end))
+          .format(
+                len(multi_threading_results1), len(multi_threading_results2),
+                int(math.log10(multi_threading_results1[-1])) + 1, int(math.log10(multi_threading_results2[-1]))+1,
+                end))
 
     print("multi processing")
     start = datetime.datetime.now()
@@ -106,9 +105,10 @@ if __name__ == "__main__":
     p2.join()
     result = p1.exitcode == 0 and p2.exitcode == 0
     end = (datetime.datetime.now() - start).total_seconds()
-    queue_items = get_complete_queue_sorted(q)
-
-    print("successfully finished: {}\nfibonacci list: {}\nfibonacci list length: {:d}\n"
-          "number of digits fibonacci list last item : {:d}\ntime taken: {:f}\n"
-          .format(result, queue_items, len(queue_items),
-                  int(math.log10(queue_items[-1])) + 1, end))
+    queue_items = get_complete_queue(q)
+    print("successfully finished: {}\n"
+          "fibonacci list length: {:d}\n"
+          "number of digits fibonacci list biggest item : {:d}\ntime taken: {:f}\n"
+          .format(result,
+                  len(queue_items),
+                  int(math.log10(max(queue_items))) + 1, end))

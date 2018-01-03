@@ -19,12 +19,11 @@ def fib(n):
         counter += 1
 
 
-def collect_fibs(ns):
-    fibunaccies = fib(ns)
-    fibs_list = []
-    for fibunacci in fibunaccies:
-        fibs_list.append(fibunacci)
-    return fibs_list
+def collect_fibs(ns, results):
+    fibonaccies = fib(ns)
+    for fibonacci in fibonaccies:
+        results.append(fibonacci)
+    return True
 
 
 def test_fib():
@@ -36,16 +35,16 @@ def test_fib():
 
 
 def test_collect_fibs():
-    fs = collect_fibs(iterations)
-    print("fs: {}".format(fs))
-    assert last_fib_number_digits <= int(math.log10(fs[-1]))+1
+    result_list = []
+    if not collect_fibs(iterations, result_list):
+        raise Exception('collect_fibs function failed to return True')
+    assert last_fib_number_digits <= int(math.log10(result_list[-1]))+1
 
 
 if __name__ == "__main__":
-    n = iterations
     print("sequential execution")
     start = time.time()
-    f = fib(n)
+    f = fib(iterations)
     fib_list = []
     for x in f:
         fib_list.append(x)
@@ -55,19 +54,21 @@ if __name__ == "__main__":
 
     print("multi threading")
     start = time.time()
-    p1 = Thread(target=fib, args=(n / 2,))
+    p1 = Thread(target=fib, args=(iterations / 2,))
     p1.start()
-    p2 = Thread(target=fib, args=(n / 2,))
+    p2 = Thread(target=fib, args=(iterations / 2,))
     p2.start()
+    p1.join()
+    p2.join()
     # check return values
     end = time.time()
     print("time taken: {:f}".format(end))
 
     print("multi processing")
     start = time.time()
-    p1 = Process(target=fib, args=(n / 2,))
+    p1 = Process(target=fib, args=(iterations / 2,))
     p1.start()
-    p2 = Process(target=fib, args=(n / 2,))
+    p2 = Process(target=fib, args=(iterations / 2,))
     p2.start()
     p1.join()
     p2.join()
